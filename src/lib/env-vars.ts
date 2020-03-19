@@ -154,6 +154,51 @@ export const DEVICE_TYPE_SPECIFIC_CONFIG_VAR_PROPERTIES: Array<{
 		},
 	},
 	{
+		capableDeviceTypes: [
+			'blackboard-tx2',
+			'jetson-nano',
+			'jetson-tx2',
+			'jn30b-nano',
+			'n510-tx2',
+			'orbitty-tx2',
+			'spacely-tx2',
+			'srd3-tx2',
+		],
+		properties: {
+			RESIN_HOST_CONFIG_dtb_path: {
+				type: 'string',
+				description:
+					'Define the DTB to be used. Only supported by supervisor versions >= v10.???.???.',
+			},
+		},
+	},
+	{
+		capableDeviceTypes: [
+			'blackboard-tx2',
+			'jetson-tx2',
+			'n510-tx2',
+			'orbitty-tx2',
+			'skx2',
+			'spacely-tx2',
+			'srd3-tx2',
+		],
+		properties: {
+			RESIN_HOST_CONFIG_odmdata_configuration: {
+				enum: [
+					'Configuration #1',
+					'Configuration #2',
+					'Configuration #3',
+					'Configuration #4',
+					'Configuration #5',
+					'Configuration #6',
+				],
+				description:
+					'Define the ODMDATA configuration. Only supported by supervisor versions >= v10.???.???.',
+				default: 'Configuration #1',
+			},
+		},
+	},
+	{
 		capableDeviceTypes: ['up-board'],
 		properties: {
 			RESIN_HOST_CONFIGFS_ssdt: {

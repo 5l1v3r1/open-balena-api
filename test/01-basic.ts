@@ -121,6 +121,17 @@ describe('Basic', () => {
 				],
 			},
 			{
+				deviceType: 'jetson-nano',
+				extraConfigVarSchemaProperties: ['RESIN_HOST_CONFIG_dtb_path'],
+			},
+			{
+				deviceType: 'jetson-tx2',
+				extraConfigVarSchemaProperties: [
+					'RESIN_HOST_CONFIG_dtb_path',
+					'RESIN_HOST_CONFIG_odmdata_configuration',
+				],
+			},
+			{
 				deviceType: 'up-board',
 				extraConfigVarSchemaProperties: ['RESIN_HOST_CONFIGFS_ssdt'],
 			},
