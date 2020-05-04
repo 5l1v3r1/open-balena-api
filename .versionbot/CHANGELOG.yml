@@ -1,4 +1,22 @@
 - commits:
+    - subject: 'env-vars: Add ODMDATA & DTB config vars for nvidia boards'
+      hash: 634c6709de619b634f66fe738992e310007b28ab
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+        See: >-
+          https://www.flowdock.com/app/rulemotion/r-supervisor/threads/54GM3Zqzk75loM4ELl77Zt1w7Vt
+        see: >-
+          https://www.flowdock.com/app/rulemotion/r-supervisor/threads/54GM3Zqzk75loM4ELl77Zt1w7Vt
+        Depends-on: 'https://github.com/balena-io/balena-supervisor/issues/1207'
+        depends-on: 'https://github.com/balena-io/balena-supervisor/issues/1207'
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+  version: 0.75.0
+  date: 2020-05-04T11:40:08.214Z
+- commits:
     - subject: Select only the required fields in findUser calls
       hash: d54da3df925890f262fce65f07fdbd30d10b8e49
       body: ''
