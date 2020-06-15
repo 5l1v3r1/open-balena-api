@@ -552,7 +552,7 @@ async function checkSupervisorReleaseUpgrades(
 		resource: 'supervisor_release',
 		id: newSupervisorReleaseId,
 		options: {
-			$select: 'supervisor_version',
+			$select: ['supervisor_version', 'image_name'],
 		},
 	})) as AnyObject;
 
@@ -562,36 +562,81 @@ async function checkSupervisorReleaseUpgrades(
 		);
 	}
 
-	const newSupervisorVersion = newSupervisorRelease.supervisor_version;
+	let newSupervisorVersion;
+	// if this is `latest` (i.e. we're pointed to a public supervisor app, pull the corresponding release's version
+	if (newSupervisorRelease.supervisor_version === 'latest') {
+		const newSupervisorResource = (await api.get({
+			resource: 'release',
+			options: {
+				$expand: ['release_tag', 'contains__image/image'],
+				$filter: {
+					contains__image: {
+						image: {
+							is_stored_at__image_location: newSupervisorRelease.image_name,
+						},
+					},
+					release_tag: {
+						tag_key: 'version',
+					},
+				},
+			},
+		})) as AnyObject;
+		newSupervisorVersion = newSupervisorResource.release_tag[0].value;
+	} else {
+		newSupervisorVersion = newSupervisorRelease.supervisor_version;
+	}
 
-	const releases = (await api.get({
+	const oldSupervisorRelease = (await api.get({
 		resource: 'supervisor_release',
 		options: {
 			$select: ['supervisor_version'],
 			$filter: {
-				should_manage__device: {
-					$any: {
-						$alias: 'd',
-						$expr: {
-							d: {
-								id: {
-									$in: deviceIds,
+				$and: [
+					{
+						should_manage__device: {
+							$any: {
+								$alias: 'd',
+								$expr: {
+									d: {
+										id: {
+											$in: deviceIds,
+										},
+									},
 								},
 							},
 						},
 					},
-				},
+				],
 			},
 		},
 	})) as AnyObject[];
+	let oldSupervisorVersion;
+	if (oldSupervisorRelease[0].supervisor_version === 'latest') {
+		const oldSupervisorResource = (await api.get({
+			resource: 'release',
+			options: {
+				$expand: ['release_tag', 'contains__image/image'],
+				$filter: {
+					contains__image: {
+						image: {
+							is_stored_at__image_location: oldSupervisorRelease[0].image_name,
+						},
+					},
+					release_tag: {
+						tag_key: 'version',
+					},
+				},
+			},
+		})) as AnyObject;
+		oldSupervisorVersion = oldSupervisorResource.release_tag[0].value;
+	} else {
+		oldSupervisorVersion = oldSupervisorRelease[0].supervisor_version;
+	}
 
-	for (const release of releases) {
-		const oldVersion = release.supervisor_version;
-		if (semver.lt(newSupervisorVersion, oldVersion)) {
-			throw new BadRequestError(
-				`Attempt to downgrade supervisor, which is not allowed`,
-			);
-		}
+	if (semver.lt(newSupervisorVersion, oldSupervisorVersion)) {
+		throw new BadRequestError(
+			`Attempt to downgrade supervisor, which is not allowed`,
+		);
 	}
 }
 
