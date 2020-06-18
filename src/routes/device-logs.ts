@@ -13,6 +13,7 @@ import {
 } from '../platform/errors';
 
 import { RedisBackend } from '../lib/device-logs/backends/redis';
+import { LokiBackend } from '../lib/device-logs/backends/loki';
 import {
 	AnySupervisorLog,
 	DeviceLog,
@@ -23,6 +24,7 @@ import {
 	SupervisorLog,
 } from '../lib/device-logs/struct';
 import { Supervisor } from '../lib/device-logs/supervisor';
+import { LOKI_HOST, LOKI_WRITE_PCT } from '../lib/config';
 
 const {
 	BadRequestError,
@@ -43,7 +45,10 @@ const DEFAULT_RETENTION_LIMIT = 1000;
 const DEFAULT_SUBSCRIPTION_LOGS = 0;
 
 const redis = new RedisBackend();
+const loki = new LokiBackend();
 const supervisor = new Supervisor();
+
+const randomPct = () => Math.random() * 100;
 
 // Reading logs section
 
@@ -216,6 +221,13 @@ export const store: RequestHandler = async (req: Request, res: Response) => {
 		const logs: DeviceLog[] = supervisor.convertLogs(ctx, body);
 		if (logs.length) {
 			await getBackend(ctx).publish(ctx, logs);
+			if (LOKI_HOST && LOKI_WRITE_PCT > randomPct()) {
+				try {
+					await loki.publish(ctx, logs);
+				} catch (err) {
+					captureException(err, 'Failed to publish log to Loki');
+				}
+			}
 		}
 		res.sendStatus(201);
 	} catch (err) {
@@ -309,6 +321,16 @@ function handleStreamingWrite(
 			if (buffer.length && backend.available) {
 				// Even if the connection was closed, still flush the buffer
 				const promise = backend.publish(ctx, buffer);
+				// Separately publish to Loki until Redis is retired
+				let promise2;
+				try {
+					promise2 =
+						LOKI_HOST && LOKI_WRITE_PCT > randomPct()
+							? loki.publish(ctx, buffer)
+							: undefined;
+				} catch (err) {
+					captureException(err, 'Failed to create request to Loki');
+				}
 				// Clear the buffer
 				buffer.length = 0;
 				// Resume in case it was paused due to buffering
@@ -316,6 +338,11 @@ function handleStreamingWrite(
 					req.resume();
 				}
 				await promise;
+				try {
+					await promise2;
+				} catch (err) {
+					captureException(err, 'Failed to publish logs to Loki');
+				}
 			}
 
 			// If headers were sent, it means the connection is ended
@@ -362,7 +389,7 @@ async function getWriteContext(
 		resource: 'device',
 		options: {
 			$filter: { uuid },
-			$select: ['id', 'logs_channel'],
+			$select: ['id', 'logs_channel', 'belongs_to__application'],
 			$expand: {
 				image_install: {
 					$select: 'id',
@@ -381,6 +408,7 @@ async function getWriteContext(
 	})) as Array<{
 		id: number;
 		logs_channel?: string;
+		belongs_to__application: number;
 		image_install: Array<{
 			id: number;
 			image: Array<{
@@ -396,6 +424,7 @@ async function getWriteContext(
 	}
 	return {
 		id: device.id,
+		belongs_to__application: device.belongs_to__application,
 		logs_channel: device.logs_channel,
 		uuid,
 		images: device.image_install.map((imageInstall) => {
