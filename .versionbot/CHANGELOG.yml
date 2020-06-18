@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add new logging backend LokiBackend
+      hash: 59fc66bc0485fb02cd419468aef2f32738515c9c
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Thomas Manning <thomasm@balena.io>
+        signed-off-by: Thomas Manning <thomasm@balena.io>
+      author: Thomas Manning
+  version: 0.77.0
+  date: 2020-06-18T16:57:06.260Z
+- commits:
     - subject: Move device-log tests from balena-api
       hash: 7620ebcdb0658a7c85f74ddb36963f13d8b2bed6
       body: ''
