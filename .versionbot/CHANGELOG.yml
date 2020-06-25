@@ -1,4 +1,14 @@
 - commits:
+    - subject: WIP
+      hash: 1962eb7836061c70b257ff95aee7e5c101915b05
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 0.81.0
+  date: 2020-06-25T15:50:17.294Z
+- commits:
     - subject: 'tests: sort & deduplicate device field list'
       hash: 19f9083b5bc1ee44f11680ddb81ea899d962a066
       body: ''
@@ -3840,8 +3850,8 @@
       footer:
         Connects-to: 'https://github.com/balena-io/open-balena-api/issues/321'
         connects-to: 'https://github.com/balena-io/open-balena-api/issues/321'
-        HQ: balena-io/balena#2177
-        hq: balena-io/balena#2177
+        HQ: 'balena-io/balena#2177'
+        hq: 'balena-io/balena#2177'
         Change-type: patch
         change-type: patch
         Signed-off-by: Matthew McGinn <matthew@balena.io>
